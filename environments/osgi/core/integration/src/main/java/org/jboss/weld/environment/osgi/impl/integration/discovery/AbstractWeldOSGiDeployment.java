@@ -24,10 +24,15 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.environment.osgi.impl.integration.OSGiProxyService;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.packageadmin.RequiredBundle;
 
 import javax.enterprise.inject.spi.Extension;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -46,7 +51,7 @@ import java.util.Set;
 public abstract class AbstractWeldOSGiDeployment implements Deployment {
     private final ServiceRegistry serviceRegistry;
 
-    private final Iterable<Metadata<Extension>> extensions;
+    private final ArrayList<Metadata<Extension>> extensions;
 
     private final Bundle bundle;
 
@@ -55,7 +60,47 @@ public abstract class AbstractWeldOSGiDeployment implements Deployment {
         this.serviceRegistry.add(ProxyServices.class, new OSGiProxyService());
         this.bundle = bundle;
         // OK, Here we can install our own Extensions instances
-        this.extensions = bootstrap.loadExtensions(new BridgeClassLoader(bundle, getClass().getClassLoader()));
+        Set<Bundle> bundles = getDeploymentBundles(bundle);
+        this.extensions = new ArrayList<Metadata<Extension>>();
+        for (Bundle b : bundles) {
+            loadExtensions(bootstrap, new BridgeClassLoader(b));
+        }
+    }
+
+    private Set<Bundle> getDeploymentBundles(Bundle bundle) {
+        Set<Bundle> bundles = new HashSet<Bundle>();
+        ServiceReference sr = bundle.getBundleContext().getServiceReference(PackageAdmin.class.getName());
+        if (sr != null) {
+            try {
+                PackageAdmin pa = (PackageAdmin) bundle.getBundleContext().getService(sr);
+                RequiredBundle[] rqs = pa.getRequiredBundles(null);
+                for (RequiredBundle rq : rqs) {
+                    Bundle[] rbs = rq.getRequiringBundles();
+                    if (rbs != null) {
+                        for (Bundle rb : rbs) {
+                            if (rb == bundle) {
+                                bundles.add(rq.getBundle());
+                                break;
+                            }
+                        }
+                    }
+                }
+            } finally {
+                bundle.getBundleContext().ungetService(sr);
+            }
+        }
+        bundles.add(bundle);
+        bundles.add(FrameworkUtil.getBundle(getClass()));
+        return bundles;
+    }
+
+    private void loadExtensions(Bootstrap bootstrap, ClassLoader loader) {
+        Iterable<Metadata<Extension>> exts = bootstrap.loadExtensions(loader);
+        if (exts != null) {
+            for (Metadata<Extension> ext : exts) {
+                extensions.add(ext);
+            }
+        }
     }
 
     @Override
@@ -71,37 +116,22 @@ public abstract class AbstractWeldOSGiDeployment implements Deployment {
     private static class BridgeClassLoader extends ClassLoader {
         private final Bundle bundle;
 
-        private final ClassLoader infra;
-
-        public BridgeClassLoader(Bundle bundle, ClassLoader infraClassLoader) {
+        public BridgeClassLoader(Bundle bundle) {
             this.bundle = bundle;
-            this.infra = infraClassLoader;
         }
 
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
-            Class<?> loadedClass = null;
-            try {
-                loadedClass = bundle.loadClass(name);
-            } catch (ClassNotFoundException cnfe) {
-                // todo : filter on utils class only
-                loadedClass = infra.loadClass(name);
-            }
-            return loadedClass;
+            return bundle.loadClass(name);
         }
 
         @Override
         public Enumeration<URL> getResources(String s) throws IOException {
-            Set<URL> urls = new HashSet<URL>();
-            Enumeration enumBundle = bundle.getResources(s);
-            Enumeration enumInfra = infra.getResources(s);
-            if (enumBundle != null) {
-                urls.addAll(Collections.list(enumBundle));
+            Enumeration<URL> resources =  bundle.getResources(s);
+            if (resources == null) {
+                resources = Collections.emptyEnumeration();
             }
-            if (enumInfra != null) {
-                urls.addAll(Collections.list(enumInfra));
-            }
-            return Collections.enumeration(urls);
+            return resources;
         }
     }
 

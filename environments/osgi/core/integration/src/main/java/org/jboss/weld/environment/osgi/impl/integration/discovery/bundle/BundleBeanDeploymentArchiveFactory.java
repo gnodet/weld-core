@@ -20,6 +20,10 @@ import org.jboss.weld.bootstrap.api.Bootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.environment.osgi.impl.integration.discovery.BundleBeanDeploymentArchive;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.packageadmin.RequiredBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,21 +64,23 @@ public class BundleBeanDeploymentArchiveFactory {
         discoveredBeanXmlUrls.clear();
         discoveredClasses.clear();
 
-        Enumeration beansXmlMarkers = bundle.findEntries("/", "beans.xml", true);
-        Enumeration innerJars = bundle.findEntries("/", "*.jar", true);
-        Enumeration innerZips = bundle.findEntries("/", "*.zip", true);
+        for (Bundle b : getDeploymentBundles(bundle)) {
+            Enumeration beansXmlMarkers = b.findEntries("/", "beans.xml", true);
+            Enumeration innerJars = b.findEntries("/", "*.jar", true);
+            Enumeration innerZips = b.findEntries("/", "*.zip", true);
 
-        if (beansXmlMarkers != null) {
-            scanRoot(beansXmlMarkers);
-        }
-        if (innerZips != null) {
-            while (innerZips.hasMoreElements()) {
-                scanZip((URL) innerZips.nextElement());
+            if (beansXmlMarkers != null) {
+                scanRoot(b, beansXmlMarkers);
             }
-        }
-        if (innerJars != null) {
-            while (innerJars.hasMoreElements()) {
-                scanZip((URL) innerJars.nextElement());
+            if (innerZips != null) {
+                while (innerZips.hasMoreElements()) {
+                    scanZip((URL) innerZips.nextElement());
+                }
+            }
+            if (innerJars != null) {
+                while (innerJars.hasMoreElements()) {
+                    scanZip((URL) innerJars.nextElement());
+                }
             }
         }
 
@@ -92,6 +98,32 @@ public class BundleBeanDeploymentArchiveFactory {
         archive.setBeanClasses(discoveredClasses);
 
         return archive;
+    }
+
+    private Set<Bundle> getDeploymentBundles(Bundle bundle) {
+        Set<Bundle> bundles = new HashSet<Bundle>();
+        ServiceReference sr = bundle.getBundleContext().getServiceReference(PackageAdmin.class.getName());
+        if (sr != null) {
+            try {
+                PackageAdmin pa = (PackageAdmin) bundle.getBundleContext().getService(sr);
+                RequiredBundle[] rqs = pa.getRequiredBundles(null);
+                for (RequiredBundle rq : rqs) {
+                    Bundle[] rbs = rq.getRequiringBundles();
+                    if (rbs != null) {
+                        for (Bundle rb : rbs) {
+                            if (rb == bundle) {
+                                bundles.add(rq.getBundle());
+                                break;
+                            }
+                        }
+                    }
+                }
+            } finally {
+                bundle.getBundleContext().ungetService(sr);
+            }
+        }
+        bundles.add(bundle);
+        return bundles;
     }
 
     private void scanZip(URL zipUrl) {
@@ -156,7 +188,7 @@ public class BundleBeanDeploymentArchiveFactory {
         }
     }
 
-    private void scanRoot(Enumeration beansXmlMarkers) {
+    private void scanRoot(Bundle bundle, Enumeration beansXmlMarkers) {
         while (beansXmlMarkers.hasMoreElements()) {
             URL beansXmlUrl = (URL) beansXmlMarkers.nextElement();
             String beansXmlPath = beansXmlUrl.getPath();

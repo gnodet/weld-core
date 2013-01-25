@@ -185,9 +185,8 @@ public class IntegrationActivator implements BundleActivator, BundleTrackerCusto
             return;
         }
         logger.debug("Managing {}", bundle.getSymbolicName());
-        boolean set = WeldOSGiExtension.currentBundle.get() != null;
-        WeldOSGiExtension.currentBundle.set(bundle.getBundleId());
-        WeldOSGiExtension.currentContext.set(bundle.getBundleContext());
+        Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(bundle);
+        BundleContext previousContext = WeldOSGiExtension.setCurrentContext(bundle.getBundleContext());
         CDIContainer holder = factory.createContainer(bundle);
         logger.trace("CDI container created");
         holder.initialize();
@@ -225,10 +224,8 @@ public class IntegrationActivator implements BundleActivator, BundleTrackerCusto
         else {
             logger.debug("Bundle {} is not a bean bundle", bundle.getSymbolicName());
         }
-        if (!set) {
-            WeldOSGiExtension.currentBundle.remove();
-        }
-        WeldOSGiExtension.currentContext.remove();
+        WeldOSGiExtension.setCurrentBundle(previousBundle);
+        WeldOSGiExtension.setCurrentContext(previousContext);
         holder.setReady();
     }
 
@@ -266,8 +263,8 @@ public class IntegrationActivator implements BundleActivator, BundleTrackerCusto
 
     private void doStopManagement(Bundle bundle, CDIContainer container) {
         logger.debug("Unmanaging {}", bundle.getSymbolicName());
-        boolean set = WeldOSGiExtension.currentBundle.get() != null;
-        WeldOSGiExtension.currentBundle.set(bundle.getBundleId());
+        Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(bundle);
+        BundleContext previousContext = WeldOSGiExtension.setCurrentContext(bundle.getBundleContext());
         //BundleHolder bundleHolder = holder.getInstance().select(BundleHolder.class).get();
         RegistrationsHolderImpl regs = container.getInstance().select(RegistrationsHolderImpl.class).get();
         try {
@@ -293,9 +290,8 @@ public class IntegrationActivator implements BundleActivator, BundleTrackerCusto
         }
         container.shutdown();
         logger.debug("Bundle {} is unmanaged", bundle.getSymbolicName());
-        if (!set) {
-            WeldOSGiExtension.currentBundle.remove();
-        }
+        WeldOSGiExtension.setCurrentBundle(previousBundle);
+        WeldOSGiExtension.setCurrentContext(previousContext);
     }
 
 }

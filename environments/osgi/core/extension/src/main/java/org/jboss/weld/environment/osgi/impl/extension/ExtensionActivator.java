@@ -26,6 +26,7 @@ import org.jboss.weld.environment.osgi.api.events.AbstractServiceEvent;
 import org.jboss.weld.environment.osgi.api.events.BundleEvents;
 import org.jboss.weld.environment.osgi.api.events.ServiceEvents;
 import org.jboss.weld.environment.osgi.impl.Activator;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.jboss.weld.environment.osgi.impl.extension.service.WeldOSGiExtension;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -169,8 +170,8 @@ public class ExtensionActivator implements BundleActivator,
                     break;
             }
             for (ServiceReference reference : cdiEventServiceReferences) {
-                BundleContext previousContext = WeldOSGiExtension.setCurrentContext(reference.getBundle().getBundleContext());
-                Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(reference.getBundle());
+                BundleContext previousContext = ContextHolder.setCurrentContext(reference.getBundle().getBundleContext());
+                Bundle previousBundle = ContextHolder.setCurrentBundle(reference.getBundle());
                 Event<Object> broadcastingCDIEvent =
                               (Event<Object>) context.getService(reference);
                 try {
@@ -182,8 +183,8 @@ public class ExtensionActivator implements BundleActivator,
                 if (resultingWeldOSGiBundleEvent != null) {
                     fireAllEvent(resultingWeldOSGiBundleEvent, broadcastingCDIEvent);
                 }
-                WeldOSGiExtension.setCurrentBundle(previousBundle);
-                WeldOSGiExtension.setCurrentContext(previousContext);
+                ContextHolder.setCurrentBundle(previousBundle);
+                ContextHolder.setCurrentContext(previousContext);
             }
         }
     }
@@ -228,8 +229,8 @@ public class ExtensionActivator implements BundleActivator,
                     break;
             }
             for (ServiceReference reference : cdiInstanceServiceReferences) {
-                BundleContext previousContext = WeldOSGiExtension.setCurrentContext(reference.getBundle().getBundleContext());
-                Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(reference.getBundle());
+                BundleContext previousContext = ContextHolder.setCurrentContext(reference.getBundle().getBundleContext());
+                Bundle previousBundle = ContextHolder.setCurrentBundle(reference.getBundle());
                 Instance<Object> instance =
                                  (Instance<Object>) context.getService(reference);
                 try {
@@ -245,8 +246,8 @@ public class ExtensionActivator implements BundleActivator,
                 catch(Throwable t) {
                     //ignore
                 }
-                WeldOSGiExtension.setCurrentBundle(previousBundle);
-                WeldOSGiExtension.setCurrentContext(previousContext);
+                ContextHolder.setCurrentBundle(previousBundle);
+                ContextHolder.setCurrentContext(previousContext);
             }
         }
     }

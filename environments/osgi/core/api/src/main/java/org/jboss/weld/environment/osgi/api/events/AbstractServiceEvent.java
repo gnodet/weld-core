@@ -195,10 +195,14 @@ public abstract class AbstractServiceEvent {
             classes = new ArrayList<Class<?>>();
             for (String className : getServiceClassNames()) {
                 try {
-                    classes.add(type.getClassLoader().loadClass(className));
+                    classes.add(reference.getBundle().loadClass(className));
                 } catch (ClassNotFoundException ex) {
-                    ex.printStackTrace();
-                    return Collections.emptyList();
+                    try {
+                        classes.add(context.getBundle().loadClass(className));
+                    } catch (ClassNotFoundException ex2) {
+                        ex.printStackTrace();
+                        return Collections.emptyList();
+                    }
                 }
             }
         }

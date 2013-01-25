@@ -20,7 +20,7 @@ package org.jboss.weld.environment.osgi.impl.integration;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Bootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.environment.osgi.impl.extension.service.WeldOSGiExtension;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.jboss.weld.environment.osgi.impl.integration.discovery.bundle.BundleBeanDeploymentArchiveFactory;
 import org.jboss.weld.environment.osgi.impl.integration.discovery.bundle.BundleDeployment;
 import org.jboss.weld.manager.api.WeldManager;
@@ -34,11 +34,11 @@ import java.util.Collection;
 
 /**
  * Weld container used for bean bundles by
- * {@link org.jboss.weld.environment.osgi.impl.WeldCDIContainer}.
+ * {@link WeldCDIContainer}.
  * <p/>
  * It is responsible for initialization of a Weld container requested by
  * Weld-OSGi using the {@link
- * org.jboss.weld.environment.osgi.impl.WeldCDIContainerFactory}.
+ * WeldCDIContainerFactory}.
  *
  * @author Mathieu ANCELIN - SERLI (mathieu.ancelin@serli.com)
  * @author Matthieu CLOCHARD - SERLI (matthieu.clochard@serli.com)
@@ -75,7 +75,7 @@ public class Weld {
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         // -------------
-        Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(bundle);
+        Bundle previousBundle = ContextHolder.setCurrentBundle(bundle);
         try {
             bootstrap = new WeldBootstrap();
             BundleDeployment deployment = createDeployment(bootstrap);
@@ -106,7 +106,7 @@ public class Weld {
                     t);
             t.printStackTrace();
         } finally {
-            WeldOSGiExtension.setCurrentBundle(previousBundle);
+            ContextHolder.setCurrentBundle(previousBundle);
             Thread.currentThread().setContextClassLoader(old);
         }
         return started;

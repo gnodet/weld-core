@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.weld.environment.osgi.impl.integration;
+package org.jboss.weld.environment.osgi.impl.extension.integration;
 
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;

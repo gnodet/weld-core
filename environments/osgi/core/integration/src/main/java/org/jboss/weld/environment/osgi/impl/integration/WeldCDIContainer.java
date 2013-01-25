@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.weld.environment.osgi.impl;
+package org.jboss.weld.environment.osgi.impl.integration;
 
-import java.util.logging.Level;
 import org.jboss.weld.environment.osgi.api.annotation.Sent;
 import org.jboss.weld.environment.osgi.api.annotation.Specification;
 import org.jboss.weld.environment.osgi.api.events.InterBundleEvent;
-import org.jboss.weld.environment.osgi.impl.extension.service.WeldOSGiExtension;
-import org.jboss.weld.environment.osgi.impl.integration.Weld;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.jboss.weld.environment.osgi.spi.CDIContainer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceRegistration;
@@ -90,13 +88,13 @@ public class WeldCDIContainer implements CDIContainer {
                 + "an inter bundle event: {}",
                 bundle,
                 event);
-        Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(bundle);
+        Bundle previousBundle = ContextHolder.setCurrentBundle(bundle);
         container.getEvent().select(InterBundleEvent.class,
                 new SpecificationAnnotation(
                         event.type()),
                 new SentAnnotation()).fire(
                 event);
-        WeldOSGiExtension.setCurrentBundle(previousBundle);
+        ContextHolder.setCurrentBundle(previousBundle);
     }
 
     @Override

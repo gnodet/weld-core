@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.weld.environment.osgi.impl.integration;
+package org.jboss.weld.environment.osgi.impl.extension.integration;
 
 import javassist.ClassClassPath;
 import javassist.ClassPool;
@@ -23,9 +23,8 @@ import javassist.NotFoundException;
 import org.jboss.weld.environment.osgi.api.annotation.Property;
 import org.jboss.weld.environment.osgi.api.annotation.Publish;
 import org.jboss.weld.environment.osgi.impl.extension.beans.RegistrationsHolderImpl;
-import org.jboss.weld.environment.osgi.impl.extension.service.WeldOSGiExtension;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,9 +283,9 @@ public class ServicePublisher {
             }
         }
         if (registration != null) {
-            Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(bundle);
+            Bundle previousBundle = ContextHolder.setCurrentBundle(bundle);
             instance.select(RegistrationsHolderImpl.class).get().addRegistration(registration);
-            WeldOSGiExtension.setCurrentBundle(previousBundle);
+            ContextHolder.setCurrentBundle(previousBundle);
         }
     }
 

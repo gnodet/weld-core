@@ -35,7 +35,7 @@ import org.jboss.weld.environment.osgi.impl.extension.beans.ContainerObserver;
 import org.jboss.weld.environment.osgi.impl.extension.beans.RegistrationsHolderImpl;
 import org.jboss.weld.environment.osgi.impl.extension.beans.ServiceRegistryImpl;
 import org.jboss.weld.environment.osgi.impl.extension.service.WeldOSGiExtension;
-import org.jboss.weld.environment.osgi.impl.integration.ServicePublisher;
+import org.jboss.weld.environment.osgi.impl.extension.integration.ServicePublisher;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 

@@ -16,7 +16,7 @@
  */
 package org.jboss.weld.environment.osgi.impl.embedded;
 
-import org.jboss.weld.environment.osgi.impl.WeldCDIContainer;
+import org.jboss.weld.environment.osgi.impl.integration.WeldCDIContainer;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.osgi.framework.BundleContext;
 

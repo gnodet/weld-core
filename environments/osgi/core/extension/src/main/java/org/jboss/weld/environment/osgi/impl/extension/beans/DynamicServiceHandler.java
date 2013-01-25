@@ -17,7 +17,7 @@
 package org.jboss.weld.environment.osgi.impl.extension.beans;
 
 import org.jboss.weld.environment.osgi.api.annotation.Filter;
-import org.jboss.weld.environment.osgi.impl.extension.service.WeldOSGiExtension;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
@@ -101,8 +101,8 @@ public class DynamicServiceHandler implements InvocationHandler {
         logger.trace("Call on the DynamicServiceHandler {} for method {}",
                      this,
                      method);
-        BundleContext previousContext = WeldOSGiExtension.setCurrentContext(ctx);
-        Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(ctx.getBundle());
+        BundleContext previousContext = ContextHolder.setCurrentContext(ctx);
+        Bundle previousBundle = ContextHolder.setCurrentBundle(ctx.getBundle());
         //intercept HashCode method when the handler is not allready registered
         //map.put() need a correct hashCode() method to use
         //see OSGiServiceBean
@@ -140,8 +140,8 @@ public class DynamicServiceHandler implements InvocationHandler {
         }
         finally {
             ctx.ungetService(reference);
-            WeldOSGiExtension.setCurrentBundle(previousBundle);
-            WeldOSGiExtension.setCurrentContext(previousContext);
+            ContextHolder.setCurrentBundle(previousBundle);
+            ContextHolder.setCurrentContext(previousContext);
         }
         /*Object instanceToUse = this.tracker.waitForService(timeout);
         try {

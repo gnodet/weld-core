@@ -17,6 +17,7 @@
 package org.jboss.weld.environment.osgi.impl.extension.beans;
 
 import org.jboss.weld.environment.osgi.impl.extension.FilterGenerator;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
@@ -123,15 +124,19 @@ public class ServiceImpl<T> implements Service<T> {
                 }
                 else {
                     services.add((T) Proxy.newProxyInstance(
-                            getClass().getClassLoader(),
-                            new Class[] {
-                                (Class) serviceClass
-                            },
+                            getProxyClassLoader(registry.getBundle(), serviceClass),
+                            new Class[] { serviceClass },
                             new ServiceReferenceHandler(ref, registry)));
                 }
             }
         }
         service = services.size() > 0 ? services.get(0) : null;
+    }
+
+    private ClassLoader getProxyClassLoader(Bundle bundle, Class serviceClass) {
+        // TODO: It's quite tricky to get the correct classloader for the bundle with OSGi 4.2
+        // for now, just use the serviceClass classloader
+        return serviceClass.getClassLoader();
     }
 
     @Override

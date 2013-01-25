@@ -21,6 +21,7 @@ import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.jboss.weld.environment.osgi.impl.integration.OSGiProxyService;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.osgi.framework.Bundle;
@@ -90,6 +91,7 @@ public abstract class AbstractWeldOSGiDeployment implements Deployment {
             }
         }
         bundles.add(bundle);
+        bundles.add(FrameworkUtil.getBundle(ContextHolder.class));
         bundles.add(FrameworkUtil.getBundle(getClass()));
         return bundles;
     }

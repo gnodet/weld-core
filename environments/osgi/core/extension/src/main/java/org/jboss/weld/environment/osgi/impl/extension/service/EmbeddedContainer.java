@@ -21,6 +21,7 @@ import org.jboss.weld.environment.osgi.api.events.AbstractBundleEvent;
 import org.jboss.weld.environment.osgi.api.events.AbstractServiceEvent;
 import org.jboss.weld.environment.osgi.api.events.BundleEvents;
 import org.jboss.weld.environment.osgi.api.events.ServiceEvents;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.jboss.weld.environment.osgi.spi.CDIContainer;
 import org.jboss.weld.environment.osgi.spi.CDIContainerFactory;
 import org.jboss.weld.environment.osgi.spi.EmbeddedCDIContainer;
@@ -87,14 +88,14 @@ public class EmbeddedContainer {
     public EmbeddedCDIContainer initialize() {
         logger.trace("Entering EmbeddedContainer : "
                      + "initialize() with no parameter");
-        Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(context.getBundle());
-        BundleContext previousContext = WeldOSGiExtension.setCurrentContext(context);
+        Bundle previousBundle = ContextHolder.setCurrentBundle(context.getBundle());
+        BundleContext previousContext = ContextHolder.setCurrentContext(context);
         container.initialize();
         context.addBundleListener(listener);
         context.addServiceListener(listener);
         container.getEvent();
-        WeldOSGiExtension.setCurrentBundle(previousBundle);
-        WeldOSGiExtension.setCurrentContext(previousContext);
+        ContextHolder.setCurrentBundle(previousBundle);
+        ContextHolder.setCurrentContext(previousContext);
         return container;
     }
 
@@ -169,8 +170,8 @@ public class EmbeddedContainer {
                     bundleEvent = new BundleEvents.BundleUpdated(bundle);
                     break;
             }
-            Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(context.getBundle());
-            BundleContext previousContext = WeldOSGiExtension.setCurrentContext(context);
+            Bundle previousBundle = ContextHolder.setCurrentBundle(context.getBundle());
+            BundleContext previousContext = ContextHolder.setCurrentContext(context);
             try {
                 //broadcast the OSGi event through CDI event system
                 container.getEvent().select(BundleEvent.class).fire(event);
@@ -182,8 +183,8 @@ public class EmbeddedContainer {
                 //broadcast the corresponding Weld-OSGi event
                 fireAllEvent(bundleEvent, container.getEvent());
             }
-            WeldOSGiExtension.setCurrentBundle(previousBundle);
-            WeldOSGiExtension.setCurrentContext(previousContext);
+            ContextHolder.setCurrentBundle(previousBundle);
+            ContextHolder.setCurrentContext(previousContext);
         }
 
         @Override
@@ -204,8 +205,8 @@ public class EmbeddedContainer {
                     serviceEvent = new ServiceEvents.ServiceDeparture(ref, context);
                     break;
             }
-            Bundle previousBundle = WeldOSGiExtension.setCurrentBundle(context.getBundle());
-            BundleContext previousContext = WeldOSGiExtension.setCurrentContext(context);
+            Bundle previousBundle = ContextHolder.setCurrentBundle(context.getBundle());
+            BundleContext previousContext = ContextHolder.setCurrentContext(context);
             try {
                 //broadcast the OSGi event through CDI event system
                 container.getEvent().select(ServiceEvent.class).fire(event);
@@ -217,8 +218,8 @@ public class EmbeddedContainer {
                 //broadcast the corresponding Weld-OSGi event
                 fireAllEvent(serviceEvent, container.getEvent(), container.getInstance());
             }
-            WeldOSGiExtension.setCurrentBundle(previousBundle);
-            WeldOSGiExtension.setCurrentContext(previousContext);
+            ContextHolder.setCurrentBundle(previousBundle);
+            ContextHolder.setCurrentContext(previousContext);
         }
 
         private void fireAllEvent(AbstractServiceEvent event, Event broadcaster, Instance<Object> instance) {

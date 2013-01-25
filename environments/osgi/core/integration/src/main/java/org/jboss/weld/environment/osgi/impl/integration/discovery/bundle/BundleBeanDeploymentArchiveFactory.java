@@ -18,6 +18,7 @@ package org.jboss.weld.environment.osgi.impl.integration.discovery.bundle;
 
 import org.jboss.weld.bootstrap.api.Bootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.environment.osgi.impl.extension.context.ContextHolder;
 import org.jboss.weld.environment.osgi.impl.integration.discovery.BundleBeanDeploymentArchive;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -123,6 +124,7 @@ public class BundleBeanDeploymentArchiveFactory {
             }
         }
         bundles.add(bundle);
+        bundles.add(FrameworkUtil.getBundle(ContextHolder.class));
         return bundles;
     }
 

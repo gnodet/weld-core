@@ -18,7 +18,7 @@ package org.jboss.weld.environment.osgi.impl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.weld.environment.osgi.impl.extension.ExtensionActivator;
-import org.jboss.weld.environment.osgi.impl.integration.IntegrationActivator;
+import org.jboss.weld.environment.osgi.impl.extension.integration.IntegrationActivator;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
